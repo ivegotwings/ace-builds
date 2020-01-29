@@ -29,11 +29,38 @@
 }</pre>
 
 <script src="src-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="src-noconflict/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
 <script>
     var editor = ace.edit("editor");
+    var langTools = ace.require("ace/ext/language_tools");
     editor.setTheme("ace/theme/twilight");
-    editor.session.setMode("ace/mode/javascript");
-</script>
+    editor.session.setMode("ace/mode/javascriptcopy");
+    editor.setOptions({enableLiveAutocompletion: true});
+    var staticWordCompleter = {
+        getCompletions: function(editor, session, pos, prefix, callback) {
+            var wordList = ["hasImages","hasRelationShip","isLocale"];
+            callback(null, wordList.map(function(word) {
+                return {
+                    caption: "@attr."+word,
+                    value: word,
+                    meta: "attribute",
+                    completer: {
+                        insertMatch: function (editor, data) {
+                            editor.completer.insertMatch({value: data.value})
+                            var startPosition = editor.selection.getCursor();
+                            console.log("startPosition", startPosition);
+                            editor.session.replace({
+                                    start: { row: startPosition.row, column: startPosition.column - data.value.length-1 },
+                                    end: { row: startPosition.row, column: startPosition.column - data.value.length }
+                            }, "");
+                        }
+                    }
+                };
+            }));
 
+        }
+    }
+    langTools.addCompleter(staticWordCompleter);
+</script>
 </body>
 </html>
